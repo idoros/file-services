@@ -2,10 +2,25 @@
 # yarn lockfile v1
 
 
+"@file-services/memory@^0.4.8":
+  version "0.4.8"
+  resolved "https://registry.npmjs.org/@file-services/memory/-/memory-0.4.8.tgz#b3cd6e2081a4f530abce37a88bc0d4de23240ce9"
+  integrity sha512-OfrpKXvO5hqY8SZaL1Nl7rY9kRmVqZZoOSWN5+g3clWhKh0zcnXlNrK4CbOISiSDnT7nJD4g/jk/h6W34bmUsA==
+  dependencies:
+    "@file-services/types" "^0.4.8"
+    "@file-services/utils" "^0.4.8"
+
 "@file-services/types@^0.4.8":
   version "0.4.8"
   resolved "https://registry.npmjs.org/@file-services/types/-/types-0.4.8.tgz#c72c6f4a71b256ae99e1ac0ab7794499c812400b"
   integrity sha512-I09SbUPtV9RSRNO2KneK1SWRNNAukQMwhzw720dkjgRzdrMaOBGbJiTdm3irkIeZhXIQOS/DAZoezWo1kXMmzA==
+
+"@file-services/utils@^0.4.8":
+  version "0.4.8"
+  resolved "https://registry.npmjs.org/@file-services/utils/-/utils-0.4.8.tgz#61ed38245d73ac64330e893e548db5608244b5b7"
+  integrity sha512-+eFvBcbX7sujS+Wdn6taJNw9vqTlAIVZQlrxig5VVLz1A+UWDXucFlod/xz1oIkR9rjUjepsufADrhEC7Wt2nA==
+  dependencies:
+    "@file-services/types" "^0.4.8"
 
 "@lerna/add@3.10.6":
   version "3.10.6"

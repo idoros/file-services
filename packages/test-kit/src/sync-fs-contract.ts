@@ -71,7 +71,7 @@ export function syncFsContract(testProvider: () => Promise<ITestInput<IFileSyste
             })
         })
 
-        describe('remove', () => {
+        describe('removeSync', () => {
             it('should delete directory recursively', () => {
                 const { fs, tempDirectoryPath } = testInput
                 const { join } = fs.path
@@ -118,6 +118,142 @@ export function syncFsContract(testProvider: () => Promise<ITestInput<IFileSyste
 
                 const thrower = () => fs.removeSync(filePath)
                 expect(thrower).to.throw(/ENOENT/)
+            })
+        })
+
+        const fileName = 'a.json'
+        const anotherFileName = 'b.json'
+
+        describe('findFilesSync', () => {
+            it('finds all files recursively inside a directory', () => {
+                const { fs, fs: { path }, tempDirectoryPath } = testInput
+                const directoryPath = path.join(tempDirectoryPath, 'dir')
+
+                fs.populateDirectorySync(directoryPath, {
+                    [fileName]: '',
+                    folder1: {
+                        [fileName]: '',
+                    },
+                    folder2: {
+                        [anotherFileName]: ''
+                    }
+                })
+
+                expect(fs.findFilesSync(directoryPath)).to.eql([
+                    path.join(directoryPath, fileName),
+                    path.join(directoryPath, 'folder1', fileName),
+                    path.join(directoryPath, 'folder2', anotherFileName)
+                ])
+
+                expect(fs.findFilesSync(path.join(directoryPath, 'folder1'))).to.eql([
+                    path.join(directoryPath, 'folder1', fileName),
+                ])
+            })
+
+            it('allows specifying a file filtering callback', () => {
+                const { fs, fs: { path }, tempDirectoryPath } = testInput
+                const directoryPath = path.join(tempDirectoryPath, 'dir')
+
+                fs.populateDirectorySync(directoryPath, {
+                    [fileName]: '',
+                    folder1: {
+                        [fileName]: '',
+                    },
+                    folder2: {
+                        [anotherFileName]: ''
+                    }
+                })
+
+                expect(fs.findFilesSync(directoryPath, { filterFile: ({ name }) => name === fileName })).to.eql([
+                    path.join(directoryPath, fileName),
+                    path.join(directoryPath, 'folder1', fileName),
+                ])
+
+                expect(fs.findFilesSync(directoryPath, { filterFile: ({ name }) => name === anotherFileName })).to.eql([
+                    path.join(directoryPath, 'folder2', anotherFileName),
+                ])
+            })
+
+            it('allows specifying a directory filtering callback', () => {
+                const { fs, fs: { path }, tempDirectoryPath } = testInput
+                const directoryPath = path.join(tempDirectoryPath, 'dir')
+
+                fs.populateDirectorySync(directoryPath, {
+                    [fileName]: '',
+                    folder1: {
+                        [fileName]: '',
+                    },
+                    folder2: {
+                        [anotherFileName]: ''
+                    }
+                })
+
+                expect(fs.findFilesSync(directoryPath, { filterDirectory: ({ name }) => name === 'folder1' })).to.eql([
+                    path.join(directoryPath, fileName),
+                    path.join(directoryPath, 'folder1', fileName),
+                ])
+
+                expect(fs.findFilesSync(directoryPath, { filterDirectory: ({ name }) => name === 'folder2' })).to.eql([
+                    path.join(directoryPath, fileName),
+                    path.join(directoryPath, 'folder2', anotherFileName),
+                ])
+            })
+        })
+
+        describe('findClosestFileSync', () => {
+            it('finds closest file in parent directory chain', () => {
+                const { fs, fs: { path }, tempDirectoryPath } = testInput
+                const directoryPath = path.join(tempDirectoryPath, 'dir')
+
+                fs.populateDirectorySync(directoryPath, {
+                    [fileName]: '',
+                    folder1: {
+                        [fileName]: '',
+                    },
+                    folder2: {
+                        [anotherFileName]: ''
+                    }
+                })
+
+                expect(fs.findClosestFileSync(path.join(directoryPath, 'folder1'), fileName)).to.equal(
+                    path.join(directoryPath, 'folder1', fileName)
+                )
+
+                expect(fs.findClosestFileSync(directoryPath, fileName)).to.equal(
+                    path.join(directoryPath, fileName)
+                )
+
+                expect(fs.findClosestFileSync(path.join(directoryPath, 'folder2'), anotherFileName)).to.equal(
+                    path.join(directoryPath, 'folder2', anotherFileName),
+                )
+
+                expect(fs.findClosestFileSync(directoryPath, anotherFileName)).to.equal(null)
+            })
+        })
+
+        describe('findFilesInAncestorsSync', () => {
+            it('finds files in parent directory chain', () => {
+                const { fs, fs: { path }, tempDirectoryPath } = testInput
+                const directoryPath = path.join(tempDirectoryPath, 'dir')
+
+                fs.populateDirectorySync(directoryPath, {
+                    [fileName]: '',
+                    folder1: {
+                        [fileName]: '',
+                    },
+                    folder2: {
+                        [anotherFileName]: ''
+                    }
+                })
+
+                expect(fs.findFilesInAncestorsSync(path.join(directoryPath, 'folder1'), fileName)).to.eql([
+                    path.join(directoryPath, 'folder1', fileName),
+                    path.join(directoryPath, fileName)
+                ])
+
+                expect(fs.findFilesInAncestorsSync(path.join(directoryPath, 'folder2'), anotherFileName)).to.eql([
+                    path.join(directoryPath, 'folder2', anotherFileName)
+                ])
             })
         })
     })

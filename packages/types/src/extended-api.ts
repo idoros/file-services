@@ -14,16 +14,16 @@ export interface IFileSystemSync extends IBaseFileSystemSync {
     /**
      * Check if a path points to an existing file.
      *
-     * @param filePath possible file path
-     * @param statFn optional custom stat function (e.g. lstat to detect links)
+     * @param filePath possible file path.
+     * @param statFn optional custom stat function (e.g. lstat to detect links).
      */
     fileExistsSync(filePath: string, statFn?: IBaseFileSystemSync['statSync']): boolean
 
     /**
      * Check if a path points to an existing directory.
      *
-     * @param directoryPath possible directory path
-     * @param statFn optional custom stat function (e.g. lstatSync to detect links)
+     * @param directoryPath possible directory path.
+     * @param statFn optional custom stat function (e.g. lstatSync to detect links).
      */
     directoryExistsSync(directoryPath: string, statFn?: IBaseFileSystemSync['statSync']): boolean
 
@@ -33,15 +33,34 @@ export interface IFileSystemSync extends IBaseFileSystemSync {
     ensureDirectorySync(directoryPath: string): void
 
     /**
-     * Search for a specific file name in parent chain.
-     * Useful for finding configuration files.
+     * Search for files inside `rootDirectory`.
+     *
+     * @returns absolute paths of all found files.
      */
-    // searchParentDirectoriesSync(startDirectory: string, fileName: string): string[]
+    findFilesSync(rootDirectory: string, options?: IWalkOptions): string[]
+
+    /**
+     * Search for a specific file name in parent directory chain.
+     * Useful for finding configuration or manifest files.
+     *
+     * @returns absolute path of first found file, or `null` if none found.
+     */
+    findClosestFileSync(initialDirectoryPath: string, fileName: string): string | null
+
+    /**
+     * Search for a specific file name in parent directory chain.
+     * Useful for finding configuration or manifest files.
+     *
+     * @returns absolute paths of all found files (ordered from inner most directory and up).
+     */
+    findFilesInAncestorsSync(initialDirectory: string, fileName: string): string[]
 
     /**
      * Populates the provided directory with given contents.
+     *
+     * @returns absolute paths of written files.
      */
-    populateDirectorySync(directoryPath: string, contents: IDirectoryContents): void
+    populateDirectorySync(directoryPath: string, contents: IDirectoryContents): string[]
 
     /**
      * Recursively remove a path.
@@ -49,7 +68,7 @@ export interface IFileSystemSync extends IBaseFileSystemSync {
     removeSync(path: string): void
 
     /**
-     * Recursively walk over a directory and its contents
+     * Recursively walk over a directory and its contents.
      */
     // walkSync(rootDirectory: string, options?: IWalkOptions): IFileSystemDescriptor[]
 }
@@ -81,15 +100,34 @@ export interface IFileSystemAsync extends IBaseFileSystemAsync {
     ensureDirectory(directoryPath: string): Promise<void>
 
     /**
-     * Search for a specific file name in parent chain.
-     * Useful for finding configuration files.
+     * Search for files inside `rootDirectory`.
+     *
+     * @returns absolute paths of all found files.
      */
-    // searchParentDirectories(startDirectory: string, fileName: string): Promise<string[]>
+    findFiles(rootDirectory: string, options?: IWalkOptions): Promise<string[]>
+
+    /**
+     * Search for a specific file name in parent directory chain.
+     * Useful for finding configuration or manifest files.
+     *
+     * @returns absolute path of first found file, or `null` if none found.
+     */
+    findClosestFile(initialDirectoryPath: string, fileName: string): Promise<string | null>
+
+    /**
+     * Search for a specific file name in parent chain.
+     * Useful for finding configuration or manifest files.
+     *
+     * @returns absolute paths of all found files (ordered from inner most directory and up).
+     */
+    findFilesInAncestors(initialDirectory: string, fileName: string): Promise<string[]>
 
     /**
      * Populates the provided directory with given contents.
+     *
+     * @returns absolute paths of written files.
      */
-    populateDirectory(directoryPath: string, contents: IDirectoryContents): Promise<void>
+    populateDirectory(directoryPath: string, contents: IDirectoryContents): Promise<string[]>
 
     /**
      * Recursively remove a path.
@@ -97,7 +135,7 @@ export interface IFileSystemAsync extends IBaseFileSystemAsync {
     remove(path: string): Promise<void>
 
     /**
-     * Recursively walk over a directory and its contents
+     * Recursively walk over a directory and its contents.
      */
     // walk(rootDirectory: string, options?: IWalkOptions): Promise<IFileSystemDescriptor[]>
 }
@@ -126,17 +164,22 @@ export interface IFileSystemDescriptor {
     stats: IFileSystemStats
 }
 
-/**
- * Walk method options
- */
 export interface IWalkOptions {
     /**
-     * Optional filter function that receives a descriptor and returns
+     * Optional file filtering function that receives a file descriptor and returns
      * whether it should be included in the result.
      *
-     * Returning `false` for directories causes the walker to not read their children.
+     * @default true returned for all files.
      */
-    filter?(pathDesc: IFileSystemDescriptor): boolean
+    filterFile?(pathDesc: IFileSystemDescriptor): boolean
+
+    /**
+     * Optional directory filtering function that receives a directory descriptor and returns
+     * whether it should be walked into.
+     *
+     * @default true returned for all directories.
+     */
+    filterDirectory?(pathDesc: IFileSystemDescriptor): boolean
 }
 
 export interface IDirectoryContents {
